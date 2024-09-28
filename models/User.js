@@ -7,57 +7,64 @@ function generateLoginID() {
   return `FTB-${randomDigits}`;
 }
 
-const UserSchema = new mongoose.Schema({
-  loginID: {
-    type: String,
-    unique: true,
-    default: generateLoginID, // Automatically generate a custom unique login ID
+const UserSchema = new mongoose.Schema(
+  {
+    loginID: {
+      type: String,
+      unique: true,
+      default: generateLoginID, // Automatically generate a custom unique login ID
+    },
+    image: {
+      type: String,
+      required: false,
+    },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    gender: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    phoneNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    nid: {
+      type: String,
+      required: true,
+      unique: false,
+    },
+    currentAddress: {
+      type: String,
+      required: true,
+    },
+    role: {
+      type: Object, // Role is an object, storing both label and value
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    plainPassword: {
+      type: String,
+      required: true,
+    },
+    statusID: {
+      type: Number,
+      default: 1, // or whatever the default is
+    },
   },
-  image: {
-    type: String,
-    required: false,
-  },
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  gender: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  phoneNumber: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  nid: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  currentAddress: {
-    type: String,
-    required: true,
-  },
-  role: {
-    type: Object, // Role is an object, storing both label and value
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  plainPassword: {
-    type: String,
-    required: true,
-  },
-});
+  { timestamps: true } // Automatically adds createdAt and updatedAt fields
+);
 
 // Hash the password before saving the user
 UserSchema.pre("save", async function (next) {

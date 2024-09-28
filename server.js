@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
-const sliderRoutes = require("./routes/sliderRoutes"); // Import slider routes
+const hotelCategoryRoutes = require("./routes/hotelCategoryRoutes"); // Import slider routes
 const serviceRoutes = require("./routes/serviceRoutes"); // Import slider routes
 const portfolioRoutes = require("./routes/portfolioRoutes"); // Import slider routes
 require("dotenv").config();
@@ -17,10 +17,11 @@ app.use(express.json());
 app.use(cors());
 
 // Auth Routes
+
 app.use("/api/auth", authRoutes);
 
 // Slider Routes
-app.use("/api", sliderRoutes); // Add slider routes under /api
+app.use("/api", hotelCategoryRoutes); // Add slider routes under /api
 
 // Service Routes
 app.use("/api", serviceRoutes); // Add slider routes under /api

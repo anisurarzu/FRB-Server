@@ -10,6 +10,7 @@ function generateLoginID() {
 
 // Register a new user
 // Register a new user
+// Register a new user
 const register = async (req, res) => {
   const {
     image,
@@ -24,6 +25,25 @@ const register = async (req, res) => {
     role,
   } = req.body;
 
+  // Check for required fields
+  const requiredFields = [
+    "username",
+    "gender",
+    "email",
+    "password",
+    "phoneNumber",
+    "nid",
+    "currentAddress",
+    "role",
+  ];
+
+  const missingFields = requiredFields.filter((field) => !req.body[field]);
+  if (missingFields.length) {
+    return res
+      .status(400)
+      .json({ error: `Missing required fields: ${missingFields.join(", ")}` });
+  }
+
   try {
     // Generate unique loginID
     const loginID = generateLoginID();
@@ -33,7 +53,8 @@ const register = async (req, res) => {
       value: role.value,
     };
 
-    await User.create({
+    // Create the new user with timestamps
+    const user = await User.create({
       image,
       username,
       gender,
@@ -47,11 +68,19 @@ const register = async (req, res) => {
       loginID, // Store the generated loginID
     });
 
-    // Send a confirmation message
+    // Send a confirmation message with created date and time
     res.status(201).json({
       message: "Registration successful. Please log in to continue.",
+      createdAt: user.createdAt, // Include created date and time in the response
     });
   } catch (error) {
+    if (error.code === 11000) {
+      // MongoDB duplicate key error
+      const duplicateFields = Object.keys(error.keyValue).join(", ");
+      return res
+        .status(400)
+        .json({ error: `Duplicate fields found: ${duplicateFields}` });
+    }
     res.status(400).json({ error: error.message });
   }
 };
@@ -97,12 +126,17 @@ const login = async (req, res) => {
 // Get all users
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    // Fetch users sorted by creation date (newest first)
+
+    const users = await User.find({ statusID: { $ne: 255 } }).sort({
+      createdAt: -1,
+    });
 
     res.status(200).json({
       users: users.map((user) => ({
         id: user._id,
         loginID: user.loginID,
+        gender: user.gender,
         username: user.username,
         email: user.email,
         phoneNumber: user.phoneNumber,
@@ -110,6 +144,7 @@ const getAllUsers = async (req, res) => {
         currentAddress: user.currentAddress,
         role: user.role,
         image: user.image,
+        createdAt: user.createdAt, // Include createdAt in the response
       })),
     });
   } catch (error) {
@@ -128,6 +163,7 @@ const updateUser = async (req, res) => {
     phoneNumber,
     nid,
     currentAddress,
+
     role,
   } = req.body;
 
@@ -141,6 +177,7 @@ const updateUser = async (req, res) => {
         email,
         phoneNumber,
         nid,
+
         currentAddress,
         role: {
           label: role.label,
@@ -171,10 +208,64 @@ const updateUser = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+// Soft Delete (mark as deleted with statusID=255)
+// Update statusID to 255
+const updateStatusID = async (req, res) => {
+  const { id } = req.params;
 
+  try {
+    // Use runValidators to enforce schema validation on updates
+    const user = await User.findByIdAndUpdate(
+      id,
+      { statusID: 255 },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "User status updated to 255.",
+      updatedUser: user, // Optionally include the updated user object for debugging
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Server error", details: error.message });
+  }
+};
+
+// Hard Delete (completely remove user)
+const hardDeleteUser = async (req, res) => {
+  const { id } = req.params;
+  const { deletedBy } = req.body; // The user who performs the delete action
+
+  try {
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Track deletion
+    const deletionInfo = {
+      deletedBy, // Track who deleted the user
+      deletedAt: new Date(), // Track when the deletion occurred
+    };
+
+    await user.remove(); // Hard delete
+
+    res
+      .status(200)
+      .json({ message: "User permanently deleted.", ...deletionInfo });
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
 module.exports = {
   register,
   login,
   getAllUsers,
   updateUser,
+  updateStatusID,
+  hardDeleteUser,
 };
