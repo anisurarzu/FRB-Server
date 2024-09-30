@@ -58,6 +58,51 @@ const updateHotel = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// @desc Update room status in each category for a hotel
+// @route PUT /api/hotels/:hotelID/roomCategories/:categoryID/roomStatus
+const updateRoomStatus = async (req, res) => {
+  const { hotelID, categoryID } = req.params;
+  const { roomStatuses } = req.body; // Expecting roomStatuses as an array of objects [{ id: roomID, status: newStatus }]
+
+  try {
+    // Find the hotel by hotelID
+    const hotel = await Hotel.findOne({ hotelID });
+    if (!hotel) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+
+    // Find the specific room category by categoryID
+    const roomCategory = hotel.roomCategories.find(
+      (category) => category.id === parseInt(categoryID)
+    );
+    if (!roomCategory) {
+      return res.status(404).json({ error: "Room category not found" });
+    }
+
+    // Update the status of each room number in the category
+    roomStatuses.forEach(({ id, status }) => {
+      const roomNumber = roomCategory.roomNumbers.find(
+        (room) => room.id === id
+      );
+      if (roomNumber) {
+        roomNumber.status = status; // Update the status of the specific room
+      }
+    });
+
+    // Save the updated hotel document
+    await hotel.save();
+
+    res
+      .status(200)
+      .json({ message: "Room statuses updated successfully", hotel });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  updateRoomStatus,
+};
 
 // @desc Delete a category
 // @route DELETE /api/categories/:id

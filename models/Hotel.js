@@ -25,6 +25,10 @@ const RoomCategorySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  status: {
+    type: String,
+    required: false,
+  },
   roomNumbers: [RoomNumberSchema], // Array of RoomNumberSchema
 });
 
