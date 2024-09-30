@@ -69,7 +69,7 @@ const register = async (req, res) => {
     });
 
     // Send a confirmation message with created date and time
-    res.status(201).json({
+    res.status(200).json({
       message: "Registration successful. Please log in to continue.",
       createdAt: user.createdAt, // Include created date and time in the response
     });
