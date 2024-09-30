@@ -3,8 +3,8 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const hotelCategoryRoutes = require("./routes/hotelCategoryRoutes"); // Import slider routes
-const serviceRoutes = require("./routes/serviceRoutes"); // Import slider routes
-const portfolioRoutes = require("./routes/portfolioRoutes"); // Import slider routes
+const roomRoutes = require("./routes/roomRoutes"); // Import slider routes
+const hotelRoutes = require("./routes/hotelRoutes"); // Import slider routes
 require("dotenv").config();
 
 const app = express();
@@ -23,11 +23,11 @@ app.use("/api/auth", authRoutes);
 // Slider Routes
 app.use("/api", hotelCategoryRoutes); // Add slider routes under /api
 
-// Service Routes
-app.use("/api", serviceRoutes); // Add slider routes under /api
+// Room Routes
+app.use("/api", roomRoutes); // Add slider routes under /api
 
 // Portfolio Routes
-app.use("/api", portfolioRoutes); // Add slider routes under /api
+app.use("/api", hotelRoutes); // Add slider routes under /api
 
 // Root Route
 app.get("/", (req, res) => {

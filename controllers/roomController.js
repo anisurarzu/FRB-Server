@@ -1,14 +1,14 @@
-const HotelCategory = require("../models/HotelCategory");
+const Room = require("../models/Room");
 
 // Function to get the next sequential categoryID
 const getNextCategoryID = async () => {
-  const lastCategory = await HotelCategory.findOne().sort({ id: -1 });
-  return lastCategory ? lastCategory.id + 1 : 0; // If no category found, start from 0
+  const lastRoom = await Room.findOne().sort({ id: -1 });
+  return lastRoom ? lastRoom.id + 1 : 0; // If no category found, start from 0
 };
 
 // @desc Create a new hotel category
 // @route POST /api/categories
-const createHotelCategory = async (req, res) => {
+const createRoom = async (req, res) => {
   const { name, description } = req.body;
 
   try {
@@ -16,14 +16,14 @@ const createHotelCategory = async (req, res) => {
     const id = await getNextCategoryID();
 
     // Create the new category with createTime and categoryID
-    const hotelCategory = await HotelCategory.create({
+    const room = await Room.create({
       id,
       name,
       description,
       createTime: new Date(), // Set the current time as createTime
     });
 
-    res.status(200).json(hotelCategory);
+    res.status(200).json(room);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -31,10 +31,10 @@ const createHotelCategory = async (req, res) => {
 
 // @desc Get all categories
 // @route GET /api/categories
-const getHotelCategory = async (req, res) => {
+const getRoom = async (req, res) => {
   try {
-    const hotelCategory = await HotelCategory.find();
-    res.status(200).json(hotelCategory);
+    const room = await Room.find();
+    res.status(200).json(room);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -42,17 +42,17 @@ const getHotelCategory = async (req, res) => {
 
 // @desc Update a category
 // @route PUT /api/categories/:id
-const updateHotelCategory = async (req, res) => {
+const updateRoom = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const hotelCategory = await HotelCategory.findByIdAndUpdate(id, req.body, {
+    const room = await Room.findByIdAndUpdate(id, req.body, {
       new: true,
     });
-    if (!hotelCategory) {
+    if (!room) {
       return res.status(404).json({ error: "Category not found" });
     }
-    res.status(200).json(hotelCategory);
+    res.status(200).json(room);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -60,12 +60,12 @@ const updateHotelCategory = async (req, res) => {
 
 // @desc Delete a category
 // @route DELETE /api/categories/:id
-const deleteHotelCategory = async (req, res) => {
+const deleteRoom = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const hotelCategory = await HotelCategory.findByIdAndDelete(id);
-    if (!hotelCategory) {
+    const room = await Room.findByIdAndDelete(id);
+    if (!room) {
       return res.status(404).json({ error: "Category not found" });
     }
     res.status(200).json({ message: "Category deleted successfully" });
@@ -75,8 +75,8 @@ const deleteHotelCategory = async (req, res) => {
 };
 
 module.exports = {
-  createHotelCategory,
-  getHotelCategory,
-  updateHotelCategory,
-  deleteHotelCategory,
+  createRoom,
+  getRoom,
+  updateRoom,
+  deleteRoom,
 };

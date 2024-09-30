@@ -3,19 +3,20 @@ const mongoose = require("mongoose");
 // Auto-increment for sequential ID
 const autoIncrement = require("mongoose-sequence")(mongoose);
 
-const HotelCategorySchema = new mongoose.Schema(
+const RoomSchema = new mongoose.Schema(
   {
     id: {
       type: Number,
       unique: true, // Ensure that the ID is unique
     },
+
     name: {
       type: String,
       required: true,
     },
     description: {
       type: String,
-      required: true,
+      required: false,
     },
     createTime: {
       type: Date,
@@ -26,9 +27,9 @@ const HotelCategorySchema = new mongoose.Schema(
 );
 
 // Add auto-increment to the categoryID field
-HotelCategorySchema.plugin(autoIncrement, {
-  inc_field: "categoryID",
+RoomSchema.plugin(autoIncrement, {
+  inc_field: "id",
   start_seq: 1,
 });
 
-module.exports = mongoose.model("HotelCategory", HotelCategorySchema);
+module.exports = mongoose.model("Room", RoomSchema);
