@@ -15,6 +15,13 @@ router.get("/bookings", protect, BookingController.getBookings);
 // @route GET /api/bookings/:id
 router.get("/booking/:id", protect, BookingController.getBookingById);
 
+// @route GET /api/bookings/bookingNo/:bookingNo
+router.get(
+  "/bookings/bookingNo/:bookingNo",
+  protect,
+  BookingController.getBookingsByBookingNo
+);
+
 // @desc Update an existing booking
 // @route PUT /api/bookings/:id
 router.put("/booking/:id", protect, BookingController.updateBooking);

@@ -2,18 +2,30 @@ const Booking = require("../models/Booking");
 
 // Helper function to generate a new booking number
 const generateBookingNo = async () => {
+  const currentDate = new Date();
+
+  // Get current year, month, and day
+  const year = currentDate.getFullYear().toString().slice(-2); // Last two digits of the year
+  const month = (currentDate.getMonth() + 1).toString().padStart(2, "0"); // Month, zero-padded
+  const day = currentDate.getDate().toString().padStart(2, "0"); // Day, zero-padded
+
+  // Find the last booking
   const lastBooking = await Booking.findOne().sort({ createdAt: -1 });
 
-  if (!lastBooking || !lastBooking.bookingNo) {
-    return "FTB-01";
+  let nextSerialNo = "01"; // Default serial number
+
+  if (lastBooking && lastBooking.bookingNo) {
+    // Extract the last serial number from the last bookingNo (the last 2 digits)
+    const lastBookingSerial = lastBooking.bookingNo.slice(-2);
+
+    // Increment the serial number
+    nextSerialNo = (parseInt(lastBookingSerial, 10) + 1)
+      .toString()
+      .padStart(2, "0");
   }
 
-  const lastBookingNo = lastBooking.bookingNo.split("-")[1];
-  const nextBookingNo = (parseInt(lastBookingNo) + 1)
-    .toString()
-    .padStart(2, "0");
-
-  return `FTB-${nextBookingNo}`;
+  // Combine everything into the new booking number format
+  return `${year}${month}${day}${nextSerialNo}`;
 };
 
 // @desc Create a new booking
@@ -74,9 +86,30 @@ const updateBooking = async (req, res) => {
 // @route GET /api/bookings
 const getBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find().sort({
-      createdAt: -1,
-    });
+    // Fetch and sort bookings
+    const bookings = await Booking.find().sort({ createdAt: -1 });
+
+    // Respond with bookings array
+    res.status(200).json(bookings);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// @desc Get multiple bookings by bookingNo
+const getBookingsByBookingNo = async (req, res) => {
+  const { bookingNo } = req.params;
+
+  try {
+    // Find all bookings that have the same bookingNo
+    const bookings = await Booking.find({ bookingNo: bookingNo });
+
+    if (bookings.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No bookings found for this booking number" });
+    }
+
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -121,4 +154,5 @@ module.exports = {
   getBookings,
   getBookingById,
   deleteBooking,
+  getBookingsByBookingNo,
 };
