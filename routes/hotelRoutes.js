@@ -3,20 +3,24 @@ const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 const HotelController = require("../controllers/hotelController");
 
-// @desc Create a new slider
-// @route POST /api/sliders
+// @desc Create a new hotel
+// @route POST /api/hotel
 router.post("/hotel", protect, HotelController.createHotel);
 
-// @desc Get all sliders
-// @route GET /api/sliders
-router.get("/hotel", HotelController.getHotel);
+// @desc Get all hotels
+// @route GET /api/hotel
+router.get("/hotel", protect, HotelController.getHotel);
 
-// @desc Update a slider
-// @route PUT /api/sliders/:id
+// @desc Update a hotel
+// @route PUT /api/hotel/:id
 router.put("/hotel/:id", protect, HotelController.updateHotel);
 
-// @desc Delete a slider
-// @route DELETE /api/sliders/:id
+// @desc Update a booking in a specific room (now parameters are passed in the body)
+// @route PUT /api/hotel/room/updateBooking
+router.put("/hotel/room/updateBooking", protect, HotelController.updateBooking);
+
+// @desc Delete a hotel
+// @route DELETE /api/hotel/:id
 router.delete("/hotel/:id", protect, HotelController.deleteHotel);
 
 module.exports = router;

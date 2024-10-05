@@ -58,6 +58,70 @@ const updateHotel = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+const updateBooking = async (req, res) => {
+  // Extract hotelID, categoryName, roomName, and booking from req.body
+  const { hotelID, categoryName, roomName, booking } = req.body;
+
+  try {
+    // Log the parameters to verify the values being passed
+    console.log("hotelID:", hotelID);
+    console.log("categoryName:", categoryName);
+    console.log("roomName:", roomName);
+    console.log("booking:", booking);
+
+    // Find the hotel by hotelID
+    const hotel = await Hotel.findOne({ hotelID });
+    if (!hotel) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+
+    // Log the entire hotel object to inspect its structure
+    console.log("Hotel found:", JSON.stringify(hotel, null, 2));
+
+    // Check if roomCategories exists and contains entries
+    if (!hotel.roomCategories || hotel.roomCategories.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No room categories found in this hotel" });
+    }
+
+    // Find the specific room category by the name field (string comparison)
+    const roomCategory = hotel.roomCategories.find(
+      (category) => category.name === categoryName
+    );
+
+    console.log("Room category found:", roomCategory);
+    if (!roomCategory) {
+      return res.status(404).json({ error: "Room category not found" });
+    }
+
+    // Find the specific room by roomName
+    const roomNumber = roomCategory.roomNumbers.find(
+      (room) => room.name === roomName
+    );
+
+    console.log("Room found:", roomNumber);
+    if (!roomNumber) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Add booking to the room's bookings array
+    roomNumber.bookings.push(booking.bookings[0]); // Pushing the first element of bookings array
+
+    // Update the bookedDates array
+    roomNumber.bookedDates.push(...booking.bookedDates); // Spread operator to push all dates from bookedDates
+
+    // Save the updated hotel document
+    await hotel.save();
+
+    res.status(200).json({ message: "Booking updated successfully", hotel });
+  } catch (error) {
+    console.log("Error occurred:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // @desc Update room status in each category for a hotel
 // @route PUT /api/hotels/:hotelID/roomCategories/:categoryID/roomStatus
 const updateRoomStatus = async (req, res) => {
@@ -73,16 +137,16 @@ const updateRoomStatus = async (req, res) => {
 
     // Find the specific room category by categoryID
     const roomCategory = hotel.roomCategories.find(
-      (category) => category.id === parseInt(categoryID)
+      (category) => category.name === categoryID
     );
     if (!roomCategory) {
       return res.status(404).json({ error: "Room category not found" });
     }
 
     // Update the status of each room number in the category
-    roomStatuses.forEach(({ id, status }) => {
+    roomStatuses.forEach(({ name, status }) => {
       const roomNumber = roomCategory.roomNumbers.find(
-        (room) => room.id === id
+        (room) => room.name === name
       );
       if (roomNumber) {
         roomNumber.status = status; // Update the status of the specific room
@@ -98,10 +162,6 @@ const updateRoomStatus = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-};
-
-module.exports = {
-  updateRoomStatus,
 };
 
 // @desc Delete a category
@@ -124,5 +184,6 @@ module.exports = {
   createHotel,
   getHotel,
   updateHotel,
+  updateBooking, // Export the updateBooking method
   deleteHotel,
 };

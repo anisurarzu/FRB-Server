@@ -3,31 +3,66 @@ const mongoose = require("mongoose");
 // Auto-increment for sequential ID
 const autoIncrement = require("mongoose-sequence")(mongoose);
 
+// Define Bookings schema
+const BookingSchema = new mongoose.Schema({
+  guestName: {
+    type: String,
+    required: false,
+  },
+  checkIn: {
+    type: Date,
+    required: false,
+  },
+  checkOut: {
+    type: Date,
+    required: false,
+  },
+  bookedBy: {
+    type: String,
+    required: false,
+  },
+  paymentDetails: {
+    totalBill: {
+      type: Number,
+      required: false,
+    },
+    advancePayment: {
+      type: Number,
+      required: false,
+    },
+    duePayment: {
+      type: Number,
+      required: false,
+    },
+    paymentMethod: {
+      type: String,
+      required: false,
+    },
+    transactionId: {
+      type: String,
+      required: false,
+    },
+  },
+});
+
 // Define RoomNumbers schema
 const RoomNumberSchema = new mongoose.Schema({
-  id: {
-    type: Number,
-    required: true,
-  },
   name: {
     type: String,
     required: true,
   },
+  bookedDates: {
+    type: [String], // Array of booked date strings
+    required: false,
+  },
+  bookings: [BookingSchema], // Array of BookingSchema
 });
 
 // Define RoomCategories schema
 const RoomCategorySchema = new mongoose.Schema({
-  id: {
-    type: Number,
-    required: true,
-  },
   name: {
     type: String,
     required: true,
-  },
-  status: {
-    type: String,
-    required: false,
   },
   roomNumbers: [RoomNumberSchema], // Array of RoomNumberSchema
 });
@@ -35,10 +70,6 @@ const RoomCategorySchema = new mongoose.Schema({
 // Define Hotel schema
 const HotelSchema = new mongoose.Schema(
   {
-    hotelID: {
-      type: Number,
-      unique: true, // Ensure that the ID is unique
-    },
     hotelName: {
       type: String,
       required: true,
@@ -62,4 +93,5 @@ HotelSchema.plugin(autoIncrement, {
   start_seq: 1,
 });
 
+// Export the Hotel model
 module.exports = mongoose.model("Hotel", HotelSchema);
