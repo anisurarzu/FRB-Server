@@ -20,9 +20,9 @@ const register = async (req, res) => {
     password,
     plainPassword,
     phoneNumber,
-    nid,
     currentAddress,
     role,
+    loginID,
   } = req.body;
 
   // Check for required fields
@@ -32,9 +32,9 @@ const register = async (req, res) => {
     "email",
     "password",
     "phoneNumber",
-    "nid",
     "currentAddress",
     "role",
+    "loginID",
   ];
 
   const missingFields = requiredFields.filter((field) => !req.body[field]);
@@ -46,7 +46,7 @@ const register = async (req, res) => {
 
   try {
     // Generate unique loginID
-    const loginID = generateLoginID();
+    // const loginID = generateLoginID();
 
     const roleInfo = {
       label: role.label,
@@ -62,7 +62,6 @@ const register = async (req, res) => {
       password, // Will be hashed before saving
       plainPassword,
       phoneNumber,
-      nid,
       currentAddress,
       role: roleInfo,
       loginID, // Store the generated loginID
@@ -112,7 +111,6 @@ const login = async (req, res) => {
         username: user.username,
         email: user.email,
         phoneNumber: user.phoneNumber,
-        nid: user.nid,
         currentAddress: user.currentAddress,
         role: user.role,
         image: user.image,

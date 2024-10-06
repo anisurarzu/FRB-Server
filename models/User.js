@@ -37,11 +37,7 @@ const UserSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    nid: {
-      type: String,
-      required: true,
-      unique: false,
-    },
+
     currentAddress: {
       type: String,
       required: true,
