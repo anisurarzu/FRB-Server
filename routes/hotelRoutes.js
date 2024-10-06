@@ -22,5 +22,6 @@ router.put("/hotel/room/updateBooking", protect, HotelController.updateBooking);
 // @desc Delete a hotel
 // @route DELETE /api/hotel/:id
 router.delete("/hotel/:id", protect, HotelController.deleteHotel);
+router.delete("/api/bookings/delete", HotelController?.deleteBookingDetails);
 
 module.exports = router;
