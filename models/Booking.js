@@ -122,6 +122,14 @@ const BookingSchema = new mongoose.Schema(
       type: Date,
       default: Date.now, // Automatically set the creation time
     },
+    statusID: {
+      type: Number,
+      default: 1, // or whatever the default is
+    },
+    canceledBy: {
+      type: String,
+      default: 1, // or whatever the default is
+    },
   },
   { timestamps: true }
 ); // Automatically create createdAt and updatedAt fields

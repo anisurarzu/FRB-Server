@@ -233,32 +233,44 @@ const updateStatusID = async (req, res) => {
 };
 
 // Hard Delete (completely remove user)
+const mongoose = require("mongoose");
+
 const hardDeleteUser = async (req, res) => {
   const { id } = req.params;
   const { deletedBy } = req.body; // The user who performs the delete action
 
   try {
+    // Validate MongoDB ObjectID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid user ID format." });
+    }
+
+    // Find the user by ID
     const user = await User.findById(id);
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "User not found." });
     }
 
-    // Track deletion
+    // Track deletion information
     const deletionInfo = {
       deletedBy, // Track who deleted the user
       deletedAt: new Date(), // Track when the deletion occurred
     };
 
-    await user.remove(); // Hard delete
+    // Perform hard delete using findByIdAndDelete
+    await User.findByIdAndDelete(id);
 
-    res
-      .status(200)
-      .json({ message: "User permanently deleted.", ...deletionInfo });
+    res.status(200).json({
+      message: "User permanently deleted.",
+      ...deletionInfo,
+    });
   } catch (error) {
-    res.status(500).json({ error: "Server error" });
+    console.error("Error in hardDeleteUser:", error); // Log the error
+    res.status(500).json({ error: "Server error." });
   }
 };
+
 module.exports = {
   register,
   login,

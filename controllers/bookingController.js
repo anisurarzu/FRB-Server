@@ -86,6 +86,9 @@ const updateBooking = async (req, res) => {
 // @route GET /api/bookings
 const getBookings = async (req, res) => {
   try {
+    // const bookings = await Booking.find({ statusID: { $ne: 255 } }).sort({
+    //   createdAt: -1,
+    // });
     // Fetch and sort bookings
     const bookings = await Booking.find().sort({ createdAt: -1 });
 
@@ -132,6 +135,36 @@ const getBookingById = async (req, res) => {
   }
 };
 
+/* -------------- soft delete----- */
+
+const updateStatusID = async (req, res) => {
+  const { id } = req.params;
+  const { canceledBy } = req.body; // Assuming canceledBy comes from the request body
+
+  try {
+    // Use runValidators to enforce schema validation on updates
+    const booking = await Booking.findByIdAndUpdate(
+      id,
+      {
+        statusID: 255,
+        canceledBy, // Update the canceledBy field as well
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    res.status(200).json({
+      message: "Booking status updated to 255 and canceledBy updated.",
+      updatedBooking: booking, // Optionally include the updated booking object for debugging
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Server error", details: error.message });
+  }
+};
+
 // @desc Delete a booking
 // @route DELETE /api/bookings/:id
 const deleteBooking = async (req, res) => {
@@ -155,4 +188,5 @@ module.exports = {
   getBookingById,
   deleteBooking,
   getBookingsByBookingNo,
+  updateStatusID,
 };

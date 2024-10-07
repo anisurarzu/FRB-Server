@@ -25,8 +25,11 @@ router.get(
 // @desc Update an existing booking
 // @route PUT /api/bookings/:id
 router.put("/booking/:id", protect, BookingController.updateBooking);
+// @route PUT /api/bookings/:id
+router.put("/booking/soft/:id", protect, BookingController.updateStatusID);
 
 // @desc Delete a booking
+
 // @route DELETE /api/bookings/:id
 router.delete("/booking/:id", protect, BookingController.deleteBooking);
 
