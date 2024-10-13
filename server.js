@@ -2,10 +2,10 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
-const hotelCategoryRoutes = require("./routes/hotelCategoryRoutes"); // Import slider routes
-const roomRoutes = require("./routes/roomRoutes"); // Import slider routes
-const hotelRoutes = require("./routes/hotelRoutes"); // Import hotel routes
-const bookingRoutes = require("./routes/bookingRoutes"); // Import booking routes
+const hotelCategoryRoutes = require("./routes/hotelCategoryRoutes");
+const roomRoutes = require("./routes/roomRoutes");
+const hotelRoutes = require("./routes/hotelRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
 require("dotenv").config();
 
 const app = express();
@@ -18,25 +18,25 @@ app.use(express.json());
 app.use(cors());
 
 // Auth Routes
-
 app.use("/api/auth", authRoutes);
 
-// Slider Routes
-app.use("/api", hotelCategoryRoutes); // Add slider routes under /api
+// Hotel Category Routes
+app.use("/api/hotel-categories", hotelCategoryRoutes);
 
 // Room Routes
-app.use("/api", roomRoutes); // Add slider routes under /api
+app.use("/api/rooms", roomRoutes);
 
-// Portfolio Routes
-app.use("/api", hotelRoutes); // Add slider routes under /api
+// Hotel Routes
+app.use("/api/hotels", hotelRoutes);
 
-//Booking Routes
-app.use("/api", bookingRoutes);
+// Booking Routes
+app.use("/api/bookings", bookingRoutes);
 
 // Root Route
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
+// Listen on the specified port
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
