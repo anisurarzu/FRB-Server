@@ -1,13 +1,14 @@
 {
-  "name": "archilawn-server",
+  "name": "ftb-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Server for Archilawn project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["server", "express", "api"],
+  "author": "Your Name",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -17,5 +18,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.2",
     "mongoose-sequence": "^6.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }
