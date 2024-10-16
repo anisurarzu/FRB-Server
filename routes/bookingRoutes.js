@@ -21,6 +21,13 @@ router.get(
   protect,
   BookingController.getBookingsByBookingNo
 );
+// get booking by hotelID
+
+router.post(
+  "/getBookingByHotelID",
+  protect,
+  BookingController.getBookingsByHotelId
+);
 
 // @desc Update an existing booking
 // @route PUT /api/bookings/:id

@@ -98,6 +98,42 @@ const getBookings = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// @desc Get bookings by hotelID
+// @route GET /api/bookings/hotel/:hotelID
+// @desc Get bookings by hotelID (string version)
+// @route GET /api/bookings/hotel/:hotelID
+// @desc Get bookings by hotelID
+// @route GET /api/bookings/hotel/:hotelID
+const getBookingsByHotelId = async (req, res) => {
+  const { hotelID } = req.body; // Extract hotelID from the body instead of params
+
+  try {
+    // Convert hotelID from string to number, since hotelID is a number in your schema
+    const numericHotelID = Number(hotelID);
+
+    // Check if the conversion was successful (not NaN)
+    if (isNaN(numericHotelID)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid hotelID. Must be a number." });
+    }
+
+    // Find all bookings associated with the given hotelID and sort by creation date (latest first)
+    const bookings = await Booking.find({ hotelID: numericHotelID }).sort({
+      createdAt: -1,
+    });
+
+    if (bookings.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No bookings found for this hotel ID" });
+    }
+
+    res.status(200).json(bookings);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 // @desc Get multiple bookings by bookingNo
 const getBookingsByBookingNo = async (req, res) => {
@@ -185,6 +221,7 @@ module.exports = {
   createBooking,
   updateBooking,
   getBookings,
+  getBookingsByHotelId,
   getBookingById,
   deleteBooking,
   getBookingsByBookingNo,
