@@ -4,8 +4,8 @@
   "description": "Server for Archilawn project",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "keywords": ["server", "express", "api"],
   "author": "Your Name",
