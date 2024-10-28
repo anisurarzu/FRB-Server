@@ -104,6 +104,10 @@ const BookingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    updatedByID: {
+      type: String,
+      required: true,
+    },
     bookingID: {
       type: String,
       required: true,
@@ -127,10 +131,6 @@ const BookingSchema = new mongoose.Schema(
       default: 1, // or whatever the default is
     },
     canceledBy: {
-      type: String,
-      default: 1, // or whatever the default is
-    },
-    updatedByID: {
       type: String,
       default: 1, // or whatever the default is
     },
