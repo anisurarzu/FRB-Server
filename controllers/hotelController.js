@@ -62,33 +62,22 @@ const updateHotel = async (req, res) => {
 };
 
 const updateBooking = async (req, res) => {
-  // Extract hotelID, categoryName, roomName, and booking from req.body
   const { hotelID, categoryName, roomName, booking } = req.body;
 
   try {
-    // Log the parameters to verify the values being passed
-    console.log("hotelID:", hotelID);
-    console.log("categoryName:", categoryName);
-    console.log("roomName:", roomName);
-    console.log("booking:", booking);
-
-    // Find the hotel by hotelID
     const hotel = await Hotel.findOne({ hotelID });
     if (!hotel) {
       return res.status(404).json({ error: "Hotel not found" });
     }
 
-    // Log the entire hotel object to inspect its structure
     console.log("Hotel found:", JSON.stringify(hotel, null, 2));
 
-    // Check if roomCategories exists and contains entries
     if (!hotel.roomCategories || hotel.roomCategories.length === 0) {
       return res
         .status(404)
         .json({ error: "No room categories found in this hotel" });
     }
 
-    // Find the specific room category by the name field (string comparison)
     const roomCategory = hotel.roomCategories.find(
       (category) => category.name === categoryName
     );
@@ -98,7 +87,6 @@ const updateBooking = async (req, res) => {
       return res.status(404).json({ error: "Room category not found" });
     }
 
-    // Find the specific room by roomName
     const roomNumber = roomCategory.roomNumbers.find(
       (room) => room.name === roomName
     );
@@ -108,11 +96,11 @@ const updateBooking = async (req, res) => {
       return res.status(404).json({ error: "Room not found" });
     }
 
-    // Add booking to the room's bookings array
-    roomNumber.bookings.push(booking.bookings[0]); // Pushing the first element of bookings array
+    // Add the booking to the room's bookings array
+    roomNumber.bookings.push(booking.bookings[0]); // Push only the first booking
 
-    // Update the bookedDates array
-    roomNumber.bookedDates.push(...booking.bookedDates); // Spread operator to push all dates from bookedDates
+    // Replace the bookedDates array with the new bookedDates
+    roomNumber.bookedDates = booking.bookedDates;
 
     // Save the updated hotel document
     await hotel.save();
