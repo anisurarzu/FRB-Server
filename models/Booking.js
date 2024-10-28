@@ -130,6 +130,10 @@ const BookingSchema = new mongoose.Schema(
       type: String,
       default: 1, // or whatever the default is
     },
+    updatedByID: {
+      type: String,
+      default: 1, // or whatever the default is
+    },
   },
   { timestamps: true }
 ); // Automatically create createdAt and updatedAt fields
