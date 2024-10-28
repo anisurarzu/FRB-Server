@@ -106,7 +106,6 @@ const BookingSchema = new mongoose.Schema(
     },
     updatedByID: {
       type: String,
-      required: true,
     },
     bookingID: {
       type: String,
