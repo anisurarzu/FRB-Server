@@ -63,7 +63,11 @@ const createBooking = async (req, res) => {
     }
 
     // Create the new booking with either the referenced or new bookingNo
-    const booking = await Booking.create({ ...bookingData, bookingNo });
+    const booking = await Booking.create({
+      ...bookingData,
+      bookingNo, // This should now be a resolved string
+      serialNo,
+    });
 
     res.status(200).json({ message: "Booking created successfully", booking });
   } catch (error) {
