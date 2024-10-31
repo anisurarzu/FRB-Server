@@ -125,15 +125,10 @@ const updateBooking = async (req, res) => {
 };
 
 const deleteBookingDetails = async (req, res) => {
-  // Extract hotelID, categoryName, roomName, and datesToDelete from req.body
-  const { hotelID, categoryName, roomName, datesToDelete } = req.body; // Assume datesToDelete is an array of strings
+  const { hotelID, categoryName, roomName, datesToDelete } = req.body;
 
   try {
-    // Log the parameters to verify the values being passed
-    console.log("hotelID:", hotelID);
-    console.log("categoryName:", categoryName);
-    console.log("roomName:", roomName);
-    console.log("datesToDelete:", datesToDelete);
+    console.log("Dates to delete received from client:", datesToDelete);
 
     // Find the hotel by hotelID
     const hotel = await Hotel.findOne({ hotelID });
@@ -141,22 +136,11 @@ const deleteBookingDetails = async (req, res) => {
       return res.status(404).json({ error: "Hotel not found" });
     }
 
-    // Log the entire hotel object to inspect its structure
-    console.log("Hotel found:", JSON.stringify(hotel, null, 2));
-
-    // Check if roomCategories exists and contains entries
-    if (!hotel.roomCategories || hotel.roomCategories.length === 0) {
-      return res
-        .status(404)
-        .json({ error: "No room categories found in this hotel" });
-    }
-
-    // Find the specific room category by the name field
+    // Find the specific room category
     const roomCategory = hotel.roomCategories.find(
       (category) => category.name === categoryName
     );
 
-    console.log("Room category found:", roomCategory);
     if (!roomCategory) {
       return res.status(404).json({ error: "Room category not found" });
     }
@@ -166,22 +150,16 @@ const deleteBookingDetails = async (req, res) => {
       (room) => room.name === roomName
     );
 
-    console.log("Room found:", roomNumber);
     if (!roomNumber) {
       return res.status(404).json({ error: "Room not found" });
     }
 
-    // Store previous bookings to log the removed bookings if needed
-    const previousBookings = roomNumber.bookings.filter((booking) => {
-      // Ensure checkIn is a string before splitting
-      const checkInDate =
-        booking.checkIn instanceof Date
-          ? booking.checkIn.toISOString().split("T")[0]
-          : String(booking.checkIn).split("T")[0];
-      return datesToDelete.includes(checkInDate);
-    });
+    console.log(
+      "Current booked dates before deletion:",
+      roomNumber.bookedDates
+    );
 
-    // Remove bookings that match the specified check-in dates
+    // Filter out bookings with check-in dates in `datesToDelete`
     roomNumber.bookings = roomNumber.bookings.filter((booking) => {
       const checkInDate =
         booking.checkIn instanceof Date
@@ -190,17 +168,19 @@ const deleteBookingDetails = async (req, res) => {
       return !datesToDelete.includes(checkInDate);
     });
 
-    // Remove corresponding booked dates for the removed bookings
+    // Filter out dates in `bookedDates` that are in `datesToDelete`
     roomNumber.bookedDates = roomNumber.bookedDates.filter(
       (date) => !datesToDelete.includes(date)
     );
+
+    console.log("Updated booked dates after deletion:", roomNumber.bookedDates);
 
     // Save the updated hotel document
     await hotel.save();
 
     res.status(200).json({
-      message: "Selected bookings deleted successfully",
-      previousBookings, // Optionally return the bookings that were removed
+      message: "Selected bookings and booked dates deleted successfully",
+      removedDates: datesToDelete,
       hotel,
     });
   } catch (error) {
