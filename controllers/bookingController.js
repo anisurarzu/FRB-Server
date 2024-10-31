@@ -1,4 +1,3 @@
-// Helper function to generate a new booking number
 const Booking = require("../models/Booking");
 
 // Helper function to generate a serial number for today's bookings
@@ -33,22 +32,38 @@ const generateBookingNo = (serialNo) => {
 
 // @desc Create a new booking
 // @route POST /api/bookings
+
 const createBooking = async (req, res) => {
   const bookingData = req.body;
 
   try {
+    let bookingNo;
+
     // Generate a new serial number for today's booking
     const serialNo = await generateSerialNo();
 
     // Generate a booking number using the serial number
-    const bookingNo = generateBookingNo(serialNo);
 
-    // Create the new booking with the generated bookingNo and serialNo
-    const booking = await Booking.create({
-      ...bookingData,
-      bookingNo, // This should now be a resolved string
-      serialNo,
-    });
+    // Check if the reference exists (i.e., the booking is associated with an existing bookingNo)
+    if (bookingData.reference) {
+      const referenceBooking = await Booking.findOne({
+        bookingNo: bookingData.reference,
+      });
+
+      if (referenceBooking) {
+        // Use the existing bookingNo from the reference
+        bookingNo = referenceBooking.bookingNo;
+      } else {
+        // If the reference bookingNo does not exist, generate a new booking number
+        const bookingNo = generateBookingNo(serialNo);
+      }
+    } else {
+      // Generate a new booking number if no reference is provided
+      const bookingNo = generateBookingNo(serialNo);
+    }
+
+    // Create the new booking with either the referenced or new bookingNo
+    const booking = await Booking.create({ ...bookingData, bookingNo });
 
     res.status(200).json({ message: "Booking created successfully", booking });
   } catch (error) {
