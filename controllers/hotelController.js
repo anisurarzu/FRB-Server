@@ -62,22 +62,33 @@ const updateHotel = async (req, res) => {
 };
 
 const updateBooking = async (req, res) => {
+  // Extract hotelID, categoryName, roomName, and booking from req.body
   const { hotelID, categoryName, roomName, booking } = req.body;
 
   try {
+    // Log the parameters to verify the values being passed
+    console.log("hotelID:", hotelID);
+    console.log("categoryName:", categoryName);
+    console.log("roomName:", roomName);
+    console.log("booking:", booking);
+
+    // Find the hotel by hotelID
     const hotel = await Hotel.findOne({ hotelID });
     if (!hotel) {
       return res.status(404).json({ error: "Hotel not found" });
     }
 
+    // Log the entire hotel object to inspect its structure
     console.log("Hotel found:", JSON.stringify(hotel, null, 2));
 
+    // Check if roomCategories exists and contains entries
     if (!hotel.roomCategories || hotel.roomCategories.length === 0) {
       return res
         .status(404)
         .json({ error: "No room categories found in this hotel" });
     }
 
+    // Find the specific room category by the name field (string comparison)
     const roomCategory = hotel.roomCategories.find(
       (category) => category.name === categoryName
     );
@@ -87,6 +98,7 @@ const updateBooking = async (req, res) => {
       return res.status(404).json({ error: "Room category not found" });
     }
 
+    // Find the specific room by roomName
     const roomNumber = roomCategory.roomNumbers.find(
       (room) => room.name === roomName
     );
@@ -96,11 +108,11 @@ const updateBooking = async (req, res) => {
       return res.status(404).json({ error: "Room not found" });
     }
 
-    // Add the booking to the room's bookings array
-    roomNumber.bookings.push(booking.bookings[0]); // Push only the first booking
+    // Add booking to the room's bookings array
+    roomNumber.bookings.push(booking.bookings[0]); // Pushing the first element of bookings array
 
-    // Replace the bookedDates array with the new bookedDates
-    roomNumber.bookedDates = booking.bookedDates;
+    // Update the bookedDates array
+    roomNumber.bookedDates.push(...booking.bookedDates); // Spread operator to push all dates from bookedDates
 
     // Save the updated hotel document
     await hotel.save();
@@ -113,14 +125,15 @@ const updateBooking = async (req, res) => {
 };
 
 const deleteBookingDetails = async (req, res) => {
-  // Extract hotelID, categoryName, and roomName from req.body
-  const { hotelID, categoryName, roomName } = req.body;
+  // Extract hotelID, categoryName, roomName, and datesToDelete from req.body
+  const { hotelID, categoryName, roomName, datesToDelete } = req.body; // Assume datesToDelete is an array of strings
 
   try {
     // Log the parameters to verify the values being passed
     console.log("hotelID:", hotelID);
     console.log("categoryName:", categoryName);
     console.log("roomName:", roomName);
+    console.log("datesToDelete:", datesToDelete);
 
     // Find the hotel by hotelID
     const hotel = await Hotel.findOne({ hotelID });
@@ -158,18 +171,35 @@ const deleteBookingDetails = async (req, res) => {
       return res.status(404).json({ error: "Room not found" });
     }
 
-    // Clear all bookings for the room
-    const previousBookings = roomNumber.bookings; // Store previous bookings to log the removed bookings if needed
-    roomNumber.bookings = []; // Clear bookings array
+    // Store previous bookings to log the removed bookings if needed
+    const previousBookings = roomNumber.bookings.filter((booking) => {
+      // Ensure checkIn is a string before splitting
+      const checkInDate =
+        booking.checkIn instanceof Date
+          ? booking.checkIn.toISOString().split("T")[0]
+          : String(booking.checkIn).split("T")[0];
+      return datesToDelete.includes(checkInDate);
+    });
 
-    // Update bookedDates by removing all associated dates
-    roomNumber.bookedDates = []; // Clear bookedDates as well
+    // Remove bookings that match the specified check-in dates
+    roomNumber.bookings = roomNumber.bookings.filter((booking) => {
+      const checkInDate =
+        booking.checkIn instanceof Date
+          ? booking.checkIn.toISOString().split("T")[0]
+          : String(booking.checkIn).split("T")[0];
+      return !datesToDelete.includes(checkInDate);
+    });
+
+    // Remove corresponding booked dates for the removed bookings
+    roomNumber.bookedDates = roomNumber.bookedDates.filter(
+      (date) => !datesToDelete.includes(date)
+    );
 
     // Save the updated hotel document
     await hotel.save();
 
     res.status(200).json({
-      message: "All bookings deleted successfully",
+      message: "Selected bookings deleted successfully",
       previousBookings, // Optionally return the bookings that were removed
       hotel,
     });
