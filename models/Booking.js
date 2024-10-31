@@ -119,6 +119,10 @@ const BookingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    serialNo: {
+      type: String,
+      required: false,
+    },
     reference: {
       type: String,
       required: false,

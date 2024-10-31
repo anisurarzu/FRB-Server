@@ -1,7 +1,25 @@
+// Helper function to generate a new booking number
 const Booking = require("../models/Booking");
 
-// Helper function to generate a new booking number
-const generateBookingNo = async () => {
+// Helper function to generate a serial number for today's bookings
+const generateSerialNo = async () => {
+  const currentDate = new Date();
+
+  // Set start and end of the day to filter today’s bookings
+  const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0));
+  const endOfDay = new Date(currentDate.setHours(23, 59, 59, 999));
+
+  // Count documents created today to determine the next serial number
+  const bookingCountToday = await Booking.countDocuments({
+    createdAt: { $gte: startOfDay, $lte: endOfDay },
+  });
+
+  // Increment count to get the next serial number
+  return bookingCountToday + 1;
+};
+
+// Helper function to generate a booking number
+const generateBookingNo = (serialNo) => {
   const currentDate = new Date();
 
   // Get current year, month, and day
@@ -9,23 +27,8 @@ const generateBookingNo = async () => {
   const month = (currentDate.getMonth() + 1).toString().padStart(2, "0"); // Month, zero-padded
   const day = currentDate.getDate().toString().padStart(2, "0"); // Day, zero-padded
 
-  // Find the last booking created on the current date
-  const lastBookingToday = await Booking.findOne({
-    createdAt: {
-      $gte: new Date(currentDate.setHours(0, 0, 0, 0)), // Start of the day
-      $lte: new Date(currentDate.setHours(23, 59, 59, 999)), // End of the day
-    },
-  }).sort({ serialNo: -1 });
-
-  // Determine the next serial number for today
-  const nextSerialNo = lastBookingToday ? lastBookingToday.serialNo + 1 : 1;
-
-  // Combine everything into the new booking number format
-  const bookingNo = `${year}${month}${day}${nextSerialNo
-    .toString()
-    .padStart(2, "0")}`;
-
-  return { bookingNo, nextSerialNo };
+  // Combine year, month, day, and serial number to create the booking number
+  return `${year}${month}${day}${serialNo.toString().padStart(2, "0")}`;
 };
 
 // @desc Create a new booking
@@ -34,31 +37,16 @@ const createBooking = async (req, res) => {
   const bookingData = req.body;
 
   try {
-    let bookingNo, serialNo;
+    // Generate a new serial number for today's booking
+    const serialNo = await generateSerialNo();
 
-    // Check if the reference exists (i.e., the booking is associated with an existing bookingNo)
-    if (bookingData.reference) {
-      const referenceBooking = await Booking.findOne({
-        bookingNo: bookingData.reference,
-      });
+    // Generate a booking number using the serial number
+    const bookingNo = generateBookingNo(serialNo);
 
-      if (referenceBooking) {
-        // Use the existing bookingNo and serialNo from the reference
-        bookingNo = referenceBooking.bookingNo;
-        serialNo = referenceBooking.serialNo;
-      } else {
-        // If the reference bookingNo does not exist, generate a new booking number and serialNo
-        ({ bookingNo, serialNo } = await generateBookingNo());
-      }
-    } else {
-      // Generate a new booking number and serialNo if no reference is provided
-      ({ bookingNo, serialNo } = await generateBookingNo());
-    }
-
-    // Create the new booking with either the referenced or new bookingNo and serialNo
+    // Create the new booking with the generated bookingNo and serialNo
     const booking = await Booking.create({
       ...bookingData,
-      bookingNo,
+      bookingNo, // This should now be a resolved string
       serialNo,
     });
 
