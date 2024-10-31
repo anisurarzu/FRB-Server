@@ -9,11 +9,11 @@ const BookingSchema = new mongoose.Schema(
     },
     nidPassport: {
       type: String,
-      required: true,
+      required: false,
     },
     address: {
       type: String,
-      required: true,
+      required: false,
     },
     phone: {
       type: String,
@@ -66,11 +66,11 @@ const BookingSchema = new mongoose.Schema(
     },
     adults: {
       type: Number,
-      required: true,
+      required: false,
     },
     children: {
       type: Number,
-      required: true,
+      required: false,
     },
     totalBill: {
       type: Number,
@@ -96,6 +96,10 @@ const BookingSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    isKitchen: {
+      type: Boolean, // Updated to Boolean
+      required: false,
+    },
     bookedBy: {
       type: String,
       required: true,
@@ -112,10 +116,8 @@ const BookingSchema = new mongoose.Schema(
       required: true,
     },
     bookingNo: {
-      // Changed bookingID to bookingNo to match your logic
       type: String,
       required: true,
-      // unique: true, // Ensure bookingNo is unique
     },
     reference: {
       type: String,
@@ -123,15 +125,15 @@ const BookingSchema = new mongoose.Schema(
     },
     createTime: {
       type: Date,
-      default: Date.now, // Automatically set the creation time
+      default: Date.now,
     },
     statusID: {
       type: Number,
-      default: 1, // or whatever the default is
+      default: 1,
     },
     canceledBy: {
       type: String,
-      default: 1, // or whatever the default is
+      default: 1,
     },
   },
   { timestamps: true }
