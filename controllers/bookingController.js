@@ -5,8 +5,12 @@ const generateSerialNo = async () => {
   // Find the last booking by serialNo in descending order
   const lastBooking = await Booking.findOne().sort({ serialNo: -1 });
 
-  // If a previous booking exists, increment its serialNo as a number; otherwise, start at 1
-  return lastBooking ? Number(lastBooking.serialNo) + 1 : 1;
+  // Convert serialNo to a number, increment it, then convert back to string
+  const newSerialNo = lastBooking
+    ? (parseInt(lastBooking.serialNo, 10) + 1).toString()
+    : "1";
+
+  return newSerialNo;
 };
 
 const generateBookingNo = async () => {
