@@ -2,15 +2,20 @@ const Booking = require("../models/Booking");
 
 // Helper function to generate a serial number for today's bookings
 const generateSerialNo = async () => {
-  // Find the last booking by serialNo in descending order
-  const lastBooking = await Booking.findOne().sort({ serialNo: -1 });
+  try {
+    // Find the last booking by insertion order (using `_id` in descending order)
+    const lastBooking = await Booking.findOne().sort({ _id: -1 });
 
-  // Convert serialNo to a number, increment it, then convert back to string
-  const newSerialNo = lastBooking
-    ? (parseInt(lastBooking.serialNo, 10) + 1).toString()
-    : "1";
+    console.log("lastBooking serialNo:", lastBooking?.serialNo);
 
-  return newSerialNo;
+    // Increment serial number based on the last serialNo, or start at 1 if no previous booking exists
+    const newSerialNo = lastBooking ? lastBooking.serialNo + 1 : 1;
+
+    return newSerialNo;
+  } catch (error) {
+    console.error("Error generating serial number:", error);
+    throw new Error("Could not generate serial number");
+  }
 };
 
 const generateBookingNo = async () => {

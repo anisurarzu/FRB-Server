@@ -120,7 +120,7 @@ const BookingSchema = new mongoose.Schema(
       required: true,
     },
     serialNo: {
-      type: String,
+      type: Number,
       required: false,
     },
     reference: {
