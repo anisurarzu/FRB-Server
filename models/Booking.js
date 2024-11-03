@@ -86,7 +86,7 @@ const BookingSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      required: true,
+      required: false,
     },
     transactionId: {
       type: String,

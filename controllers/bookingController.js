@@ -6,8 +6,6 @@ const generateSerialNo = async () => {
     // Find the last booking by insertion order (using `_id` in descending order)
     const lastBooking = await Booking.findOne().sort({ _id: -1 });
 
-    console.log("lastBooking serialNo:", lastBooking?.serialNo);
-
     // Increment serial number based on the last serialNo, or start at 1 if no previous booking exists
     const newSerialNo = lastBooking ? lastBooking.serialNo + 1 : 1;
 
