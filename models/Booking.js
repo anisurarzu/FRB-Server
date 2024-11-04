@@ -141,6 +141,6 @@ const BookingSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
-); // Automatically create createdAt and updatedAt fields
+); // Automatically create createdAt and updatedAt fields.....
 
 module.exports = mongoose.model("Booking", BookingSchema);
