@@ -114,6 +114,7 @@ const login = async (req, res) => {
         currentAddress: user.currentAddress,
         role: user.role,
         image: user.image,
+        hotelID: user.hotelID
       },
     });
   } catch (error) {
