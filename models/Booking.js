@@ -100,6 +100,10 @@ const BookingSchema = new mongoose.Schema(
       type: Boolean, // Updated to Boolean
       required: false,
     },
+    extraBed: {
+      type: Boolean, // Updated to Boolean
+      required: false,
+    },
     bookedBy: {
       type: String,
       required: true,
@@ -120,6 +124,14 @@ const BookingSchema = new mongoose.Schema(
       required: true,
     },
     serialNo: {
+      type: Number,
+      required: false,
+    },
+    kitchenTotalBill: {
+      type: Number,
+      required: false,
+    },
+    extraBedTotalBill: {
       type: Number,
       required: false,
     },

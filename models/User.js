@@ -58,6 +58,10 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       default: 1, // or whatever the default is
     },
+    hotelID: {
+      type: Number,
+
+    },
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
