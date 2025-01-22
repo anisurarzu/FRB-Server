@@ -24,20 +24,22 @@ const generateBookingNo = async () => {
   const month = (currentDate.getMonth() + 1).toString().padStart(2, "0"); // Month, zero-padded
   const day = currentDate.getDate().toString().padStart(2, "0"); // Day, zero-padded
 
-  // Find the last booking
-  const lastBooking = await Booking.findOne().sort({ createdAt: -1 });
+  // Fetch all booking numbers and extract the highest serial number
+  const bookings = await Booking.find({}, { bookingNo: 1 });
+  let maxSerialNo = 0;
 
-  let nextSerialNo = "01"; // Default serial number
+  bookings.forEach((booking) => {
+    if (booking.bookingNo) {
+      // Extract the serial number from the bookingNo
+      const serialNo = parseInt(booking.bookingNo.slice(-2), 10);
+      if (serialNo > maxSerialNo) {
+        maxSerialNo = serialNo;
+      }
+    }
+  });
 
-  if (lastBooking && lastBooking.bookingNo) {
-    // Extract the last serial number from the last bookingNo (the last 2 digits)
-    const lastBookingSerial = lastBooking.bookingNo.slice(-2);
-
-    // Increment the serial number
-    nextSerialNo = (parseInt(lastBookingSerial, 10) + 1)
-      .toString()
-      .padStart(2, "0");
-  }
+  // Increment the highest serial number
+  const nextSerialNo = (maxSerialNo + 1).toString().padStart(2, "0");
 
   // Combine everything into the new booking number format
   return `${year}${month}${day}${nextSerialNo}`;
