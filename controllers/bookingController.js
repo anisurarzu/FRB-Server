@@ -24,25 +24,32 @@ const generateBookingNo = async () => {
   const month = (currentDate.getMonth() + 1).toString().padStart(2, "0"); // Month, zero-padded
   const day = currentDate.getDate().toString().padStart(2, "0"); // Day, zero-padded
 
-  // Fetch all booking numbers and extract the highest serial number
-  const bookings = await Booking.find({}, { bookingNo: 1 });
-  let maxSerialNo = 0;
+  // Generate the prefix for the booking number
+  const datePrefix = `${year}${month}${day}`;
 
+  // Fetch all booking numbers that match the current date prefix
+  const bookings = await Booking.find(
+    { bookingNo: { $regex: `^${datePrefix}` } }, // Match bookings with the same date prefix
+    { bookingNo: 1 }
+  );
+
+  // Determine the maximum serial number for today's bookings
+  let maxSerialNo = 0;
   bookings.forEach((booking) => {
     if (booking.bookingNo) {
       // Extract the serial number from the bookingNo
-      const serialNo = parseInt(booking.bookingNo.slice(-2), 10);
+      const serialNo = parseInt(booking.bookingNo.slice(-2), 10); // Last 2 digits for serial
       if (serialNo > maxSerialNo) {
         maxSerialNo = serialNo;
       }
     }
   });
 
-  // Increment the highest serial number
-  const nextSerialNo = (maxSerialNo + 1).toString().padStart(2, "0");
+  // Increment the maximum serial number to generate the new booking number
+  const newSerialNo = (maxSerialNo + 1).toString().padStart(2, "0"); // Zero-padded
+  const newBookingNo = `${datePrefix}${newSerialNo}`;
 
-  // Combine everything into the new booking number format
-  return `${year}${month}${day}${nextSerialNo}`;
+  return newBookingNo;
 };
 
 // @desc Create a new booking
