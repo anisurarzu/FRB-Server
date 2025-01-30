@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const bcrypt = require("bcryptjs"); // Ensure bcrypt is imported for password hashing
 
 // Function to generate unique loginID like FTB-{random4digits}
 function generateLoginID() {
@@ -89,20 +90,26 @@ const login = async (req, res) => {
   const { loginID, password } = req.body;
 
   try {
+    // Find the user by loginID
     const user = await User.findOne({ loginID });
     if (!user) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res
+        .status(400)
+        .json({ error: "User with this loginID does not exist" });
     }
 
+    // Check if the password matches
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res.status(400).json({ error: "Incorrect password" });
     }
 
+    // If login is successful, generate a JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "10h",
     });
 
+    // Return the token and user details
     res.status(200).json({
       token,
       user: {
@@ -162,29 +169,40 @@ const updateUser = async (req, res) => {
     phoneNumber,
     nid,
     currentAddress,
-
+    loginID,
     role,
+    password, // Add newPassword to handle password change
   } = req.body;
 
   try {
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      {
-        image,
-        username,
-        gender,
-        email,
-        phoneNumber,
-        nid,
-
-        currentAddress,
-        role: {
-          label: role.label,
-          value: role.value,
-        },
+    // If the new password is provided, hash it
+    let updatedFields = {
+      image,
+      username,
+      gender,
+      email,
+      phoneNumber,
+      nid,
+      loginID,
+      currentAddress,
+      role: {
+        label: role.label,
+        value: role.value,
       },
-      { new: true }
-    );
+    };
+
+    // Only hash the password if a new one is provided
+    if (password) {
+      const salt = await bcrypt.genSalt(10); // Generate salt
+      const hashedPassword = await bcrypt.hash(password, salt); // Hash the new password
+      updatedFields.password = hashedPassword; // Add hashed password to fields to be updated
+    }
+
+    // Perform the update
+    const updatedUser = await User.findByIdAndUpdate(id, updatedFields, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
