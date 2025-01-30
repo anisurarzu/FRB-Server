@@ -204,7 +204,7 @@ const getBookingById = async (req, res) => {
 
 const updateStatusID = async (req, res) => {
   const { id } = req.params;
-  const { canceledBy } = req.body; // Assuming canceledBy comes from the request body
+  const { canceledBy, reason } = req.body; // Get both canceledBy and reason from the request body
 
   try {
     // Use runValidators to enforce schema validation on updates
@@ -212,7 +212,8 @@ const updateStatusID = async (req, res) => {
       id,
       {
         statusID: 255,
-        canceledBy, // Update the canceledBy field as well
+        canceledBy, // Update the canceledBy field
+        reason, // Update the reason field as well
       },
       { new: true, runValidators: true }
     );
@@ -222,7 +223,7 @@ const updateStatusID = async (req, res) => {
     }
 
     res.status(200).json({
-      message: "Booking status updated to 255 and canceledBy updated.",
+      message: "Booking status updated to 255, canceledBy and reason updated.",
       updatedBooking: booking, // Optionally include the updated booking object for debugging
     });
   } catch (error) {

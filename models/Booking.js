@@ -151,6 +151,7 @@ const BookingSchema = new mongoose.Schema(
       type: String,
       default: 1,
     },
+    reason: { type: String, required: false },
   },
   { timestamps: true }
 ); // Automatically create createdAt and updatedAt fields.....
