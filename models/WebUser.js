@@ -7,7 +7,7 @@ function generateLoginID() {
   return `FTB-${randomDigits}`;
 }
 
-const UserSchema = new mongoose.Schema(
+const WebUserSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
@@ -31,13 +31,11 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
     email: {
       type: String,
       required: true,
       unique: true,
     },
-
     password: {
       type: String,
       required: true,
@@ -56,18 +54,19 @@ const UserSchema = new mongoose.Schema(
 );
 
 // Hash the password before saving the user
-UserSchema.pre("save", async function (next) {
+WebUserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
-    return next();
+    return next(); // Skip hashing if password is not modified (for example, on login)
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
+  next(); // Continue saving the user
 });
 
 // Password comparison method
-UserSchema.methods.matchPassword = async function (password) {
+
+WebUserSchema.methods.matchPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-module.exports = mongoose.model("WebUser", UserSchema);
+module.exports = mongoose.model("WebUser", WebUserSchema);

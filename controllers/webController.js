@@ -1,176 +1,99 @@
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
-const bcrypt = require("bcryptjs");
 const WebUser = require("../models/WebUser");
+const jwt = require("jsonwebtoken");
 
-const webRegister = async (req, res) => {
+// Generate JWT Token
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+};
+
+// Register User
+const registerUser = async (req, res) => {
+  const { firstName, lastName, username, phone, address, email, password } =
+    req.body;
+
   try {
-    const {
+    const userExists = await WebUser.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const newUser = await WebUser.create({
       firstName,
       lastName,
       username,
-      email,
       phone,
-      password,
-      confirmPassword,
       address,
-    } = req.body;
-
-    // Trim inputs to remove accidental spaces
-    const trimmedData = {
-      firstName: firstName?.trim(),
-      lastName: lastName?.trim(),
-      username: username?.trim(),
-      email: email?.trim(),
-      phone: phone?.trim(),
+      email,
       password,
-      confirmPassword,
-      address: address?.trim(),
-    };
-
-    // Check for missing fields
-    const requiredFields = [
-      "firstName",
-      "lastName",
-      "username",
-      "email",
-      "phone",
-      "password",
-      "confirmPassword",
-      "address",
-    ];
-    const missingFields = requiredFields.filter((field) => !trimmedData[field]);
-
-    if (missingFields.length) {
-      return res
-        .status(400)
-        .json({
-          error: `Missing required fields: ${missingFields.join(", ")}`,
-        });
-    }
-
-    // Check if passwords match
-    if (trimmedData.password !== trimmedData.confirmPassword) {
-      return res.status(400).json({ error: "Passwords do not match." });
-    }
-
-    // Check if the user already exists
-    const existingUser = await WebUser.findOne({
-      $or: [{ email: trimmedData.email }, { username: trimmedData.username }],
-    });
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ error: "Username or email already exists." });
-    }
-
-    // Hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(trimmedData.password, salt);
-
-    // Create a new user
-    const newUser = new WebUser({
-      firstName: trimmedData.firstName,
-      lastName: trimmedData.lastName,
-      username: trimmedData.username,
-      email: trimmedData.email,
-      phone: trimmedData.phone,
-      password: hashedPassword,
-      address: trimmedData.address,
-      loginHistory: [],
     });
 
-    // Save user to database
-    await newUser.save();
-
-    res.status(201).json({
-      message: "Registration successful. Please log in.",
-      user: {
-        id: newUser._id,
+    if (newUser) {
+      res.status(201).json({
+        _id: newUser.id,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         username: newUser.username,
         email: newUser.email,
-        phone: newUser.phone,
-        address: newUser.address,
-        createdAt: newUser.createdAt,
-      },
-    });
+        token: generateToken(newUser.id),
+      });
+    } else {
+      res.status(400).json({ message: "Invalid user data" });
+    }
   } catch (error) {
-    console.error("Registration Error:", error);
-    res.status(500).json({ error: "Server error. Please try again later." });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-const webLogin = async (req, res) => {
+// Login User
+const loginUser = async (req, res) => {
+  const { username, password } = req.body;
+  console.log("email", username);
   try {
-    const { username, password, latitude, longitude, publicIP, privateIP } =
-      req.body;
+    const user = await WebUser.findOne({ username });
 
-    // Trim username input
-    const trimmedUsername = username?.trim();
-
-    // Check if username and password are provided
-    if (!trimmedUsername || !password) {
-      return res
-        .status(400)
-        .json({ error: "Username and password are required." });
-    }
-
-    // Find user by username
-    const user = await WebUser.findOne({ username: trimmedUsername });
     if (!user) {
-      return res.status(400).json({ error: "User not found." });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // Debugging logs
-    console.log("Entered Password:", password);
-    console.log("Stored Hashed Password:", user.password);
+    console.log("User found:", user); // Debugging
+    console.log("Entered Password:", password); // Debugging
+    console.log("Stored Hashed Password:", user.password); // Debugging
 
-    // Compare entered password with hashed password
     const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return res.status(400).json({ error: "Incorrect password" });
-    }
+    console.log("Password Match:", isMatch); // Debugging
 
-    // Store login details in loginHistory
-    user.loginHistory.push({
-      latitude,
-      longitude,
-      publicIP,
-      privateIP,
-      loginTime: new Date(),
-    });
-
-    // Save updated user login history
-    await user.save();
-
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "10h",
-    });
-
-    // Send response
-    res.status(200).json({
-      token,
-      user: {
-        id: user._id,
+    if (isMatch) {
+      res.json({
+        _id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
         username: user.username,
         email: user.email,
-        phone: user.phone,
-        address: user.address,
-        loginHistory: user.loginHistory,
-      },
-    });
+        token: generateToken(user.id),
+      });
+    } else {
+      res.status(401).json({ message: "Invalid email or password" });
+    }
   } catch (error) {
-    console.error("Login Error:", error);
-    res.status(500).json({ error: "Server error. Please try again later." });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-module.exports = {
-  webRegister,
-  webLogin,
+// Get User Profile (Protected)
+const getProfile = async (req, res) => {
+  const user = await WebUser.findById(req.user.id);
+
+  if (user) {
+    res.json({
+      _id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      email: user.email,
+    });
+  } else {
+    res.status(404).json({ message: "User not found" });
+  }
 };
+
+module.exports = { registerUser, loginUser, getProfile };
