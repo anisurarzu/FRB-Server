@@ -1,5 +1,8 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const dayjs = require("dayjs");
+const utc = require("dayjs/plugin/utc");
+dayjs.extend(utc);
 require("dotenv").config();
 const bcrypt = require("bcryptjs"); // Ensure bcrypt is imported for password hashing
 
@@ -86,7 +89,11 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { loginID, password, latitude, longitude, publicIP } = req.body;
+  const { loginID, password, latitude, longitude, publicIP, loginTime } =
+    req.body;
+  // Make sure to import the UTC plugin
+
+  // Ensure loginTime is correctly formatted using dayjs (defaulting to current time if not provided)
 
   try {
     // Find the user by loginID
@@ -114,8 +121,10 @@ const login = async (req, res) => {
       latitude: latitude || "0.0", // Default if not provided
       longitude: longitude || "0.0",
       publicIP: publicIP || "Unknown",
-      loginTime: new Date(),
+      loginTime: loginTime,
     };
+
+    console.log("loginData", loginTime);
 
     user.loginHistory.push(loginData);
     await user.save(); // Save updated user document

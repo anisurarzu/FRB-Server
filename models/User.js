@@ -32,7 +32,7 @@ const UserSchema = new mongoose.Schema(
         latitude: { type: String, default: "0.0" },
         longitude: { type: String, default: "0.0" },
         publicIP: { type: String, default: "Unknown" },
-        loginTime: { type: Date, default: Date.now },
+        loginTime: { type: String },
       },
     ],
   },
