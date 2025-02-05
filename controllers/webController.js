@@ -46,35 +46,48 @@ const registerUser = async (req, res) => {
 
 // Login User
 const loginUser = async (req, res) => {
-  const { username, password } = req.body;
-  console.log("email", username);
+  const { username, password, latitude, longitude, publicIP } = req.body;
+
   try {
     const user = await WebUser.findOne({ username });
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid username or password" });
     }
 
-    console.log("User found:", user); // Debugging
-    console.log("Entered Password:", password); // Debugging
-    console.log("Stored Hashed Password:", user.password); // Debugging
+    console.log("User found:", user);
+    console.log("Entered Password:", password);
+    console.log("Stored Hashed Password:", user.password);
 
     const isMatch = await user.matchPassword(password);
-    console.log("Password Match:", isMatch); // Debugging
+    console.log("Password Match:", isMatch);
 
-    if (isMatch) {
-      res.json({
-        _id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        username: user.username,
-        email: user.email,
-        token: generateToken(user.id),
-      });
-    } else {
-      res.status(401).json({ message: "Invalid email or password" });
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid username or password" });
     }
+
+    // Store login details in loginHistory array
+    const loginData = {
+      latitude: latitude || "0.0", // Default value if not provided
+      longitude: longitude || "0.0",
+      publicIP: publicIP || "Unknown",
+      loginTime: new Date(), // Set login time to current time
+    };
+
+    user.loginHistory.push(loginData); // Add login data to history
+    await user.save(); // Save updated user document
+
+    res.json({
+      _id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      email: user.email,
+      token: generateToken(user.id),
+      loginHistory: user.loginHistory, // Send updated history in response
+    });
   } catch (error) {
+    console.error("Login error:", error.message);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
