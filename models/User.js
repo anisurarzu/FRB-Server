@@ -14,71 +14,42 @@ const UserSchema = new mongoose.Schema(
       unique: true,
       default: generateLoginID, // Automatically generate a custom unique login ID
     },
-    image: {
-      type: String,
-      required: false,
-    },
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    gender: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    phoneNumber: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+    image: { type: String },
+    username: { type: String, required: true, unique: true },
+    gender: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    phoneNumber: { type: String, required: true, unique: true },
+    currentAddress: { type: String, required: true },
+    role: { type: Object, required: true }, // Role as an object (label & value)
+    password: { type: String, required: true },
+    plainPassword: { type: String, required: true },
+    statusID: { type: Number, default: 1 },
+    hotelID: { type: Number },
 
-    currentAddress: {
-      type: String,
-      required: true,
-    },
-    role: {
-      type: Object, // Role is an object, storing both label and value
-      required: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    plainPassword: {
-      type: String,
-      required: true,
-    },
-    statusID: {
-      type: Number,
-      default: 1, // or whatever the default is
-    },
-    hotelID: {
-      type: Number,
-
-    },
+    // ✅ Added login history tracking
+    loginHistory: [
+      {
+        latitude: { type: String, default: "0.0" },
+        longitude: { type: String, default: "0.0" },
+        publicIP: { type: String, default: "Unknown" },
+        loginTime: { type: Date, default: Date.now },
+      },
+    ],
   },
-  { timestamps: true } // Automatically adds createdAt and updatedAt fields
+  { timestamps: true }
 );
 
 // Hash the password before saving the user
 UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    return next();
-  }
+  if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
 // Password comparison method
-UserSchema.methods.matchPassword = async function (password) {
-  return await bcrypt.compare(password, this.password);
+UserSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
 module.exports = mongoose.model("User", UserSchema);

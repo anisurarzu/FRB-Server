@@ -85,13 +85,13 @@ const register = async (req, res) => {
   }
 };
 
-// User login with loginID
 const login = async (req, res) => {
-  const { loginID, password } = req.body;
+  const { loginID, password, latitude, longitude, publicIP } = req.body;
 
   try {
     // Find the user by loginID
     const user = await User.findOne({ loginID });
+
     if (!user) {
       return res
         .status(400)
@@ -109,6 +109,17 @@ const login = async (req, res) => {
       expiresIn: "10h",
     });
 
+    // Store login details in loginHistory
+    const loginData = {
+      latitude: latitude || "0.0", // Default if not provided
+      longitude: longitude || "0.0",
+      publicIP: publicIP || "Unknown",
+      loginTime: new Date(),
+    };
+
+    user.loginHistory.push(loginData);
+    await user.save(); // Save updated user document
+
     // Return the token and user details
     res.status(200).json({
       token,
@@ -122,9 +133,11 @@ const login = async (req, res) => {
         role: user.role,
         image: user.image,
         hotelID: user.hotelID,
+        loginHistory: user.loginHistory, // Include login history
       },
     });
   } catch (error) {
+    console.error("Login Error:", error.message);
     res.status(500).json({ error: "Server error" });
   }
 };
