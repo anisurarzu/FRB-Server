@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const bcrypt = require("bcryptjs"); // Ensure bcrypt is imported for password hashing
 
+
 // Function to generate unique loginID like FTB-{random4digits}
 function generateLoginID() {
   const randomDigits = Math.floor(1000 + Math.random() * 9000); // Generates a random 4-digit number
@@ -277,7 +278,6 @@ const hardDeleteUser = async (req, res) => {
       deletedAt: new Date(), // Track when the deletion occurred
     };
 
-    // Perform hard delete using findByIdAndDelete
     await User.findByIdAndDelete(id);
 
     res.status(200).json({
@@ -285,11 +285,10 @@ const hardDeleteUser = async (req, res) => {
       ...deletionInfo,
     });
   } catch (error) {
-    console.error("Error in hardDeleteUser:", error); // Log the error
+    console.error("Error in hardDeleteUser:", error);
     res.status(500).json({ error: "Server error." });
   }
 };
-
 module.exports = {
   register,
   login,

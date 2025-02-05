@@ -9,58 +9,48 @@ function generateLoginID() {
 
 const UserSchema = new mongoose.Schema(
   {
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+    },
     username: {
       type: String,
       required: true,
       unique: true,
     },
-    
-    loginID: {
+    phone: {
       type: String,
+      required: true,
       unique: true,
-      default: generateLoginID, // Automatically generate a custom unique login ID
     },
-    image: {
-      type: String,
-      required: false,
-    },
-    gender: {
+    address: {
       type: String,
       required: true,
     },
+
     email: {
       type: String,
       required: true,
       unique: true,
     },
-    phoneNumber: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    currentAddress: {
-      type: String,
-      required: true,
-    },
-    role: {
-      type: Object, // Role is an object, storing both label and value
-      required: true,
-    },
+
     password: {
       type: String,
       required: true,
     },
-    plainPassword: {
-      type: String,
-      required: true,
-    },
-    statusID: {
-      type: Number,
-      default: 1, // or whatever the default is
-    },
-    hotelID: {
-      type: Number,
-    },
+    loginHistory: [
+      {
+        latitude: String,
+        longitude: String,
+        publicIP: String,
+        privateIP: String,
+        loginTime: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
@@ -80,4 +70,4 @@ UserSchema.methods.matchPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("WebUser", UserSchema);

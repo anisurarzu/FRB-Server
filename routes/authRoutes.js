@@ -8,11 +8,14 @@ const {
   hardDeleteUser,
 } = require("../controllers/authController");
 const { protect } = require("../middleware/authMiddleware");
+const { webRegister, webLogin } = require("../controllers/webController");
 
 const router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/web-register", webRegister);
+router.post("/web-login", webLogin);
 
 // Protected routes
 router.get("/users", protect, getAllUsers); // Get all users
