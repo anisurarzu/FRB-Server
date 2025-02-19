@@ -10,6 +10,21 @@ router.post("/hotel", protect, HotelController.createHotel);
 // @desc Get all hotels
 // @route GET /api/hotel
 router.get("/hotel", protect, HotelController.getHotel);
+router.get("/getHotelsDropdown", HotelController.getHotelsDropdown);
+//searchAvailableRooms
+router.post("/hotel/search", HotelController.searchAvailableRooms);
+//get all hotel list for web
+router.get("/hotel/hotelList", HotelController.hotelsForWeb);
+router.post("/hotel/like", HotelController.likeHotel);
+router.post("/hotel/comment", HotelController.addHotelComment);
+
+
+// Rate a hotel
+router.post("/hotel/rate", HotelController.rateHotel);
+
+
+// gt hotel rooms by hotel ID
+router.get("/hotel/room/:id", HotelController.hotelRoomCategoryWiseByHotelID);
 
 // @desc Update a hotel
 // @route PUT /api/hotel/:id
@@ -24,4 +39,4 @@ router.put("/hotel/room/updateBooking", protect, HotelController.updateBooking);
 router.delete("/hotel/:id", protect, HotelController.deleteHotel);
 router.delete("/bookings/delete", HotelController?.deleteBookingDetails);
 
-module.exports = router;
+module.exports = router;

@@ -6,9 +6,22 @@ const hotelCategoryRoutes = require("./routes/hotelCategoryRoutes"); // Import s
 const roomRoutes = require("./routes/roomRoutes"); // Import slider routes
 const hotelRoutes = require("./routes/hotelRoutes"); // Import hotel routes
 const bookingRoutes = require("./routes/bookingRoutes"); // Import booking routes
+const http = require("http");
+const { initializeSocket } = require("./controllers/socketController");
+
 require("dotenv").config();
 
 const app = express();
+//web socket
+const server = http.createServer(app);
+
+// Middleware
+app.use(cors({ origin: "http://localhost:5000", methods: ["GET", "POST"], credentials: true }));
+app.use(express.json());
+
+// Initialize WebSocket
+initializeSocket(server);
+
 
 // Connect to MongoDB
 connectDB();
