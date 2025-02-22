@@ -15,6 +15,11 @@ router.get("/getHotelsDropdown", HotelController.getHotelsDropdown);
 router.post("/hotel/search", HotelController.searchAvailableRooms);
 //get all hotel list for web
 router.get("/hotel/hotelList", HotelController.hotelsForWeb);
+router.post("/hotel/like", HotelController.likeHotel);
+router.post("/hotel/comment", HotelController.addHotelComment);
+
+// Rate a hotel
+router.post("/hotel/rate", HotelController.rateHotel);
 
 // gt hotel rooms by hotel ID
 router.get("/hotel/room/:id", HotelController.hotelRoomCategoryWiseByHotelID);
