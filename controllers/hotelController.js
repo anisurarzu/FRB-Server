@@ -168,7 +168,7 @@ const deleteBookingDetails = async (req, res) => {
       roomNumber.bookedDates
     );
 
-    // Filter out bookings with check-in dates in `datesToDelete`
+    // Filter out bookings with check-in dates in datesToDelete
     roomNumber.bookings = roomNumber.bookings.filter((booking) => {
       const checkInDate =
         booking.checkIn instanceof Date
@@ -177,7 +177,7 @@ const deleteBookingDetails = async (req, res) => {
       return !datesToDelete.includes(checkInDate);
     });
 
-    // Filter out dates in `bookedDates` that are in `datesToDelete`
+    // Filter out dates in bookedDates that are in datesToDelete
     roomNumber.bookedDates = roomNumber.bookedDates.filter(
       (date) => !datesToDelete.includes(date)
     );
@@ -296,24 +296,130 @@ const searchAvailableRooms = async (req, res) => {
   }
 };
 // @desc Get all hotel details for web (name, image, hotelID, price, description)
-// @route GET /api/hotels/for-web
 const hotelsForWeb = async (req, res) => {
   try {
     const hotels = await Hotel.find(
       {},
-      "hotelID hotelName hotelImages hotelDescription price"
+      "hotelID hotelName hotelImages hotelDescription price likes ratings comments"
     );
 
-    // Map hotels to a simplified structure
-    const simplifiedHotels = hotels.map((hotel) => ({
-      hotelID: hotel.hotelID,
-      hotelName: hotel.hotelName,
-      hotelImages: hotel.hotelImages, // Assuming there is an image field
-      price: hotel.price, // Assuming there is a price field
-      hotelDescription: hotel.hotelDescription,
-    }));
+    const simplifiedHotels = hotels.map((hotel) => {
+      const averageRating = hotel.ratings.length
+        ? hotel.ratings.reduce((sum, { rating }) => sum + rating, 0) /
+          hotel.ratings.length
+        : 0;
+
+      const likesWithCreatedAt = hotel.likes.map((like) => ({
+        userID: like.userID,
+        isLiked: like.isLiked,
+        createdAt: like.createdAt,
+      }));
+
+      return {
+        hotelID: hotel.hotelID,
+        hotelName: hotel.hotelName,
+        hotelImages: hotel.hotelImages,
+        hotelDescription: hotel.hotelDescription,
+        price: hotel.price,
+        likes: likesWithCreatedAt,
+        ratings: hotel.ratings,
+        rating: averageRating.toFixed(1),
+        comments: hotel.comments.map((comment) => ({
+          userID: comment.userID,
+          userName: comment.userName,
+          comment: comment.comment,
+          imageUrl: comment.imageUrl,
+          createdAt: comment.createdAt,
+        })), // Include comments
+      };
+    });
 
     res.status(200).json(simplifiedHotels);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Update hotel like status by user
+const likeHotel = async (req, res) => {
+  try {
+    const { hotelID, userID, isLiked } = req.body;
+
+    if (typeof isLiked !== "boolean") {
+      return res.status(400).json({ error: "Invalid isLiked value" });
+    }
+
+    // Add the current date and time as createdAt when adding a like
+    const likeWithCreatedAt = { userID, isLiked, createdAt: new Date() };
+
+    const updatedHotel = await Hotel.updateOne(
+      { hotelID },
+      { $push: { likes: likeWithCreatedAt } }, // Push new like status with createdAt field
+      { runValidators: false } // Don't validate the whole document
+    );
+
+    if (updatedHotel.nModified === 0) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+
+    res.status(200).json({ message: "Like status updated" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+const addHotelComment = async (req, res) => {
+  try {
+    const { hotelID, userID, userName, comment, imageUrl } = req.body;
+
+    if (!hotelID || !userID || !userName || !comment || !imageUrl) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const newComment = {
+      userID,
+      userName,
+      comment,
+      imageUrl,
+      createdAt: new Date(),
+    };
+
+    const updatedHotel = await Hotel.updateOne(
+      { hotelID },
+      { $push: { comments: newComment } }
+    );
+
+    if (updatedHotel.nModified === 0) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+
+    res.status(201).json({ message: "Comment added successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Update hotel rating
+const rateHotel = async (req, res) => {
+  try {
+    const { hotelID, userID, rating } = req.body;
+
+    if (typeof rating !== "number" || rating < 0 || rating > 5) {
+      return res
+        .status(400)
+        .json({ error: "Invalid rating value (0-5 allowed)" });
+    }
+
+    const updatedHotel = await Hotel.updateOne(
+      { hotelID },
+      { $push: { ratings: { userID, rating } } }, // Push new rating to the ratings array
+      { runValidators: false } // Don't validate the whole document
+    );
+
+    if (updatedHotel.nModified === 0) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+
+    res.status(200).json({ message: "Rating updated" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -360,5 +466,8 @@ module.exports = {
   deleteBookingDetails,
   searchAvailableRooms,
   hotelsForWeb,
+  likeHotel,
+  addHotelComment,
+  rateHotel,
   hotelRoomCategoryWiseByHotelID,
 };
