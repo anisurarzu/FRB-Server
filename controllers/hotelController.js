@@ -324,6 +324,7 @@ const hotelsForWeb = async (req, res) => {
         likes: likesWithCreatedAt,
         ratings: hotel.ratings,
         rating: averageRating.toFixed(1),
+        totalComments: hotel.comments.length,
         comments: hotel.comments.map((comment) => ({
           userID: comment.userID,
           userName: comment.userName,
@@ -398,6 +399,30 @@ const addHotelComment = async (req, res) => {
   }
 };
 
+const getHotelComments = async (req, res) => {
+  try {
+    const { hotelID } = req.params;
+
+    if (!hotelID) {
+      return res.status(400).json({ error: "Hotel ID is required" });
+    }
+
+    const hotel = await Hotel.findOne({ hotelID });
+
+    if (!hotel) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+
+    // Sort comments by createdAt in descending order (newest first)
+    const sortedComments = hotel.comments.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    res.status(200).json(sortedComments);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 // Update hotel rating
 const rateHotel = async (req, res) => {
   try {
@@ -468,6 +493,7 @@ module.exports = {
   hotelsForWeb,
   likeHotel,
   addHotelComment,
+  getHotelComments,
   rateHotel,
   hotelRoomCategoryWiseByHotelID,
 };
