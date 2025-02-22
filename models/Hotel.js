@@ -21,6 +21,7 @@ const BookingSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+
   paymentDetails: {
     totalBill: {
       type: Number,
@@ -66,6 +67,12 @@ const RoomCategorySchema = new mongoose.Schema({
   },
   roomNumbers: [RoomNumberSchema], // Array of RoomNumberSchema
 });
+const ImageListSchema = new mongoose.Schema({
+  image: {
+    type: String,
+  },
+  // Array of ImageListSchema
+});
 
 // Define Hotel schema
 const HotelSchema = new mongoose.Schema(
@@ -82,6 +89,7 @@ const HotelSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    hotelImages: [ImageListSchema],
     roomCategories: [RoomCategorySchema], // Array of RoomCategorySchema
     createTime: {
       type: Date,

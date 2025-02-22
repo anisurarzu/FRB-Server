@@ -42,6 +42,15 @@ const getHotel = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// @route GET /api/hotels/dropdown
+const getHotelsDropdown = async (req, res) => {
+  try {
+    const hotels = await Hotel.find({}, "hotelID hotelName");
+    res.status(200).json(hotels);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 // @desc Update a category
 // @route PUT /api/categories/:id
@@ -247,11 +256,109 @@ const deleteHotel = async (req, res) => {
   }
 };
 
+// room search api by hotelName
+const searchAvailableRooms = async (req, res) => {
+  const { hotelID, checkInDate, checkOutDate } = req.body;
+
+  if (!hotelID || !checkInDate || !checkOutDate) {
+    return res.status(400).json({ error: "Missing required parameters" });
+  }
+
+  try {
+    // Find the hotel by hotelID
+    const hotel = await Hotel.findOne({ hotelID });
+    if (!hotel) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+
+    // Convert check-in and check-out dates to ISO format
+    const checkIn = new Date(checkInDate).toISOString().split("T")[0];
+    const checkOut = new Date(checkOutDate).toISOString().split("T")[0];
+
+    // Iterate through each room category and filter available rooms
+    const availableRoomsByCategory = hotel.roomCategories.map((category) => {
+      const availableRooms = category.roomNumbers.filter((room) => {
+        return room.bookedDates.every(
+          (date) => date < checkIn || date >= checkOut
+        );
+      });
+
+      return {
+        categoryName: category.name,
+        availableRooms,
+      };
+    });
+
+    res.status(200).json({ availableRoomsByCategory });
+  } catch (error) {
+    console.error("Error searching for available rooms:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+// @desc Get all hotel details for web (name, image, hotelID, price, description)
+// @route GET /api/hotels/for-web
+const hotelsForWeb = async (req, res) => {
+  try {
+    const hotels = await Hotel.find(
+      {},
+      "hotelID hotelName hotelImages hotelDescription price"
+    );
+
+    // Map hotels to a simplified structure
+    const simplifiedHotels = hotels.map((hotel) => ({
+      hotelID: hotel.hotelID,
+      hotelName: hotel.hotelName,
+      hotelImages: hotel.hotelImages, // Assuming there is an image field
+      price: hotel.price, // Assuming there is a price field
+      hotelDescription: hotel.hotelDescription,
+    }));
+
+    res.status(200).json(simplifiedHotels);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// @desc Get room category details by hotelID (without booking information)
+// @route GET /api/hotels/:hotelID/categories
+const hotelRoomCategoryWiseByHotelID = async (req, res) => {
+  const { hotelID } = req.params;
+
+  try {
+    // Find hotel by hotelID
+    const hotel = await Hotel.findOne({ hotelID });
+    if (!hotel) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+
+    // Get room categories without booking information
+    const roomCategories = hotel.roomCategories.map((category) => {
+      return {
+        categoryName: category.name,
+        roomNumbers: category.roomNumbers.map((room) => ({
+          roomName: room.name,
+          price: room.price, // Assuming each room has a price
+          features: room.features, // Assuming rooms have features
+          roomType: room.roomType, // Assuming rooms have types like 'single', 'double', etc.
+        })),
+      };
+    });
+
+    res.status(200).json({ hotelID: hotel.hotelID, roomCategories });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createHotel,
   getHotel,
+  getHotelsDropdown,
   updateHotel,
   updateBooking, // Export the updateBooking method
   deleteHotel,
   deleteBookingDetails,
+  searchAvailableRooms,
+  hotelsForWeb,
+  hotelRoomCategoryWiseByHotelID,
 };

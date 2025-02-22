@@ -9,12 +9,20 @@ const RoomSchema = new mongoose.Schema(
       type: Number,
       unique: true, // Ensure that the ID is unique
     },
+    price: {
+      type: Number,
+      unique: false, // Ensure that the ID is unique
+    },
 
     name: {
       type: String,
       required: true,
     },
     description: {
+      type: String,
+      required: false,
+    },
+    image: {
       type: String,
       required: false,
     },

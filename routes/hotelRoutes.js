@@ -10,6 +10,14 @@ router.post("/hotel", protect, HotelController.createHotel);
 // @desc Get all hotels
 // @route GET /api/hotel
 router.get("/hotel", protect, HotelController.getHotel);
+router.get("/getHotelsDropdown", HotelController.getHotelsDropdown);
+//searchAvailableRooms
+router.post("/hotel/search", HotelController.searchAvailableRooms);
+//get all hotel list for web
+router.get("/hotel/hotelList", HotelController.hotelsForWeb);
+
+// gt hotel rooms by hotel ID
+router.get("/hotel/room/:id", HotelController.hotelRoomCategoryWiseByHotelID);
 
 // @desc Update a hotel
 // @route PUT /api/hotel/:id
