@@ -17,6 +17,7 @@ router.post("/hotel/search", HotelController.searchAvailableRooms);
 router.get("/hotel/hotelList", HotelController.hotelsForWeb);
 router.post("/hotel/like", HotelController.likeHotel);
 router.post("/hotel/comment", HotelController.addHotelComment);
+router.get("/hotel/:hotelID/comments", HotelController.getHotelComments);
 
 
 // Rate a hotel
