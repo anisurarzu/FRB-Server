@@ -10,6 +10,11 @@ router.post("/booking", protect, BookingController.createBooking);
 // @desc Get all bookings
 // @route GET /api/bookings
 router.get("/bookings", protect, BookingController.getBookings);
+// @route GET /api/bookings by check in date
+router.get(
+  "/bookings/check-in/:date",
+  BookingController.getBookingsByCheckInDate
+);
 
 // @desc Get a single booking by ID
 // @route GET /api/bookings/:id
@@ -32,6 +37,12 @@ router.post(
 // @desc Update an existing booking
 // @route PUT /api/bookings/:id
 router.put("/booking/:id", protect, BookingController.updateBooking);
+router.put(
+  "/booking/details/:id",
+  protect,
+  BookingController.updateBookingDetails
+);
+// router.get("/daily-summary/:date", BookingController.getDailySummary);
 // @route PUT /api/bookings/:id
 router.put("/booking/soft/:id", protect, BookingController.updateStatusID);
 
