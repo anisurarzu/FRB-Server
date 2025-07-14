@@ -2,12 +2,13 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
-const hotelCategoryRoutes = require("./routes/hotelCategoryRoutes"); // Import slider routes
-const roomRoutes = require("./routes/roomRoutes"); // Import slider routes
-const hotelRoutes = require("./routes/hotelRoutes"); // Import hotel routes
-const bookingRoutes = require("./routes/bookingRoutes"); // Import booking routes
-const dailySummaryRoutes = require("./routes/dailySummary"); // Import booking routes
+const hotelCategoryRoutes = require("./routes/hotelCategoryRoutes");
+const roomRoutes = require("./routes/roomRoutes");
+const hotelRoutes = require("./routes/hotelRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
+const dailySummaryRoutes = require("./routes/dailySummary");
 const expenseRoutes = require("./routes/expense");
+const permissionRoutes = require("./routes/permissionRoutes"); // Import permission routes
 require("dotenv").config();
 
 const app = express();
@@ -19,28 +20,15 @@ connectDB();
 app.use(express.json());
 app.use(cors());
 
-// Auth Routes
-
+// Routes
 app.use("/api/auth", authRoutes);
-
-// Slider Routes
-app.use("/api", hotelCategoryRoutes); // Add slider routes under /api
-
-// Room Routes
-app.use("/api", roomRoutes); // Add slider routes under /api
-
-// Portfolio Routes
-app.use("/api", hotelRoutes); // Add slider routes under /api
-
-//Booking Routes
+app.use("/api", hotelCategoryRoutes);
+app.use("/api", roomRoutes);
+app.use("/api", hotelRoutes);
 app.use("/api", bookingRoutes);
-
-//daily Summary Routes
 app.use("/api", dailySummaryRoutes);
-//Web Booking Routes
-// app.use("/api", webBookingRoutes);
-//Expense Routes
 app.use("/api/expenses", expenseRoutes);
+app.use("/api", permissionRoutes); // Add permission routes under /api
 
 // Root Route
 app.get("/", (req, res) => {
