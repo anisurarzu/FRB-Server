@@ -46,8 +46,16 @@ const register = async (req, res) => {
       .json({ error: `Missing required fields: ${missingFields.join(", ")}` });
   }
 
+  // Validate required sub-fields in role
+  if (!role.id || !role.label || !role.value) {
+    return res.status(400).json({
+      error: "Role must include id, label, and value.",
+    });
+  }
+
   try {
     const roleInfo = {
+      id: role.id,
       label: role.label,
       value: role.value,
     };
@@ -63,7 +71,7 @@ const register = async (req, res) => {
       currentAddress,
       role: roleInfo,
       loginID,
-      hotelID: [], // Initialize empty hotelID array
+      hotelID: [], // Initialize empty hotelID array (optional)
     });
 
     res.status(201).json({
